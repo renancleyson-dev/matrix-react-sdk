@@ -284,6 +284,12 @@ export const SETTINGS: {[setting: string]: ISetting} = {
         default: false,
         controller: new NewLayoutSwitcherController(),
     },
+    "feature_spotlight": {
+        isFeature: true,
+        supportedLevels: LEVELS_FEATURE,
+        displayName: _td("New spotlight search experience"),
+        default: false,
+    },
     "RoomList.backgroundImage": {
         supportedLevels: LEVELS_ACCOUNT_SETTINGS,
         default: null,
