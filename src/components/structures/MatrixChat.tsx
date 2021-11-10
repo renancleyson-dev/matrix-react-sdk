@@ -82,7 +82,6 @@ import SpaceStore from "../../stores/SpaceStore";
 import { replaceableComponent } from "../../utils/replaceableComponent";
 import RoomListStore from "../../stores/room-list/RoomListStore";
 import { RoomUpdateCause } from "../../stores/room-list/models";
-import defaultDispatcher from "../../dispatcher/dispatcher";
 import SecurityCustomisations from "../../customisations/Security";
 import Spinner from "../views/elements/Spinner";
 import QuestionDialog from "../views/dialogs/QuestionDialog";
@@ -712,16 +711,9 @@ export default class MatrixChat extends React.PureComponent<IProps, IState> {
                 break;
             }
             case Action.ViewRoomDirectory: {
-                if (SpaceStore.instance.activeSpace) {
-                    defaultDispatcher.dispatch({
-                        action: "view_room",
-                        room_id: SpaceStore.instance.activeSpace.roomId,
-                    });
-                } else {
-                    Modal.createTrackedDialog('Room directory', '', RoomDirectory, {
-                        initialText: payload.initialText,
-                    }, 'mx_RoomDirectory_dialogWrapper', false, true);
-                }
+                Modal.createTrackedDialog('Room directory', '', RoomDirectory, {
+                    initialText: payload.initialText,
+                }, 'mx_RoomDirectory_dialogWrapper', false, true);
 
                 // View the welcome or home page if we need something to look at
                 this.viewSomethingBehindModal();

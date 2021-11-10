@@ -52,6 +52,7 @@ import IconizedContextMenu, {
 import SettingsStore from "../../../settings/SettingsStore";
 import { SettingLevel } from "../../../settings/SettingLevel";
 import UIStore from "../../../stores/UIStore";
+import UserMenu from "../../structures/UserMenu";
 
 const useSpaces = (): [Room[], Room[], Room | null] => {
     const invites = useEventEmitterState<Room[]>(SpaceStore.instance, UPDATE_INVITED_SPACES, () => {
@@ -72,7 +73,11 @@ interface IInnerSpacePanelProps {
     setPanelCollapsed: Dispatch<SetStateAction<boolean>>;
 }
 
-const HomeButtonContextMenu = ({ onFinished, ...props }: ComponentProps<typeof SpaceContextMenu>) => {
+export const HomeButtonContextMenu = ({
+    onFinished,
+    hideHeader,
+    ...props
+}: ComponentProps<typeof SpaceContextMenu>) => {
     const allRoomsInHome = useEventEmitterState(SpaceStore.instance, UPDATE_HOME_BEHAVIOUR, () => {
         return SpaceStore.instance.allRoomsInHome;
     });
@@ -83,9 +88,9 @@ const HomeButtonContextMenu = ({ onFinished, ...props }: ComponentProps<typeof S
         className="mx_SpacePanel_contextMenu"
         compact
     >
-        <div className="mx_SpacePanel_contextMenu_header">
+        { !hideHeader && <div className="mx_SpacePanel_contextMenu_header">
             { _t("Home") }
-        </div>
+        </div> }
         <IconizedContextMenuOptionList first>
             <IconizedContextMenuCheckbox
                 iconClassName="mx_SpacePanel_noIcon"
@@ -187,6 +192,7 @@ const InnerSpacePanel = React.memo<IInnerSpacePanelProps>(({ children, isPanelCo
     const activeSpaces = activeSpace ? [activeSpace] : [];
 
     return <div className="mx_SpaceTreeLevel">
+        <UserMenu isPanelCollapsed={isPanelCollapsed} />
         <HomeButton selected={!activeSpace} isPanelCollapsed={isPanelCollapsed} />
         { invites.map(s => (
             <SpaceItem
