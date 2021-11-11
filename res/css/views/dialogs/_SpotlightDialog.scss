@@ -63,7 +63,7 @@ limitations under the License.
         }
     }
 
-    .mx_SpotlightDialog_content {
+    #mx_SpotlightDialog_content {
         margin: 16px;
 
         .mx_SpotlightDialog_section {
@@ -76,6 +76,38 @@ limitations under the License.
 
             & + .mx_SpotlightDialog_section {
                 margin-top: 24px;
+            }
+        }
+
+        .mx_SpotlightDialog_recents {
+            > div {
+                display: flex;
+                white-space: nowrap;
+                overflow-x: auto;
+            }
+
+            .mx_SpotlightDialog_recent {
+                border: 1px solid $quinary-content;
+                border-radius: 8px;
+                padding: 6px 8px 4px 6px;
+                color: $primary-content;
+                font-size: $font-15px;
+                line-height: $font-20px;
+                display: inline-block;
+
+                .mx_BaseAvatar {
+                    margin-right: 8px;
+                    display: inline-block;
+                    height: 20px;
+                }
+
+                & + .mx_SpotlightDialog_recent {
+                    margin-left: 12px;
+                }
+
+                &:hover, &[aria-selected=true] {
+                    background-color: $quinary-content;
+                }
             }
         }
     }
