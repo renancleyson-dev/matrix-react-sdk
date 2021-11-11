@@ -20,7 +20,7 @@ import { EventType } from "matrix-js-sdk/src/@types/event";
 
 import { _t } from "../../../languageHandler";
 import { useEventEmitter, useEventEmitterState } from "../../../hooks/useEventEmitter";
-import SpaceStore, { UPDATE_SELECTED_SPACE } from "../../../stores/SpaceStore";
+import SpaceStore from "../../../stores/spaces/SpaceStore";
 import { ChevronFace, ContextMenuTooltipButton, useContextMenu } from "../../structures/ContextMenu";
 import SpaceContextMenu from "../context_menus/SpaceContextMenu";
 import { HomeButtonContextMenu } from "../spaces/SpacePanel";
@@ -44,6 +44,13 @@ import InlineSpinner from "../elements/InlineSpinner";
 import TooltipButton from "../elements/TooltipButton";
 import MatrixClientContext from "../../../contexts/MatrixClientContext";
 import RoomListStore, { LISTS_UPDATE_EVENT } from "../../../stores/room-list/RoomListStore";
+import {
+    getMetaSpaceName,
+    MetaSpace,
+    SpaceKey,
+    UPDATE_HOME_BEHAVIOUR,
+    UPDATE_SELECTED_SPACE,
+} from "../../../stores/spaces";
 
 const contextMenuBelow = (elementRect: DOMRect) => {
     // align the context menu's icons with the icon which opened the context menu
@@ -148,8 +155,13 @@ const RoomListHeader = ({ onVisibilityChange }: IProps) => {
     const cli = useContext(MatrixClientContext);
     const [mainMenuDisplayed, mainMenuHandle, openMainMenu, closeMainMenu] = useContextMenu<HTMLDivElement>();
     const [plusMenuDisplayed, plusMenuHandle, openPlusMenu, closePlusMenu] = useContextMenu<HTMLDivElement>();
-    const activeSpace = useEventEmitterState<Room>(SpaceStore.instance, UPDATE_SELECTED_SPACE, () => {
-        return SpaceStore.instance.activeSpace;
+    const [spaceKey, activeSpace] = useEventEmitterState<[SpaceKey, Room | null]>(
+        SpaceStore.instance,
+        UPDATE_SELECTED_SPACE,
+        () => [SpaceStore.instance.activeSpace, SpaceStore.instance.activeSpaceRoom],
+    );
+    const allRoomsInHome = useEventEmitterState(SpaceStore.instance, UPDATE_HOME_BEHAVIOUR, () => {
+        return SpaceStore.instance.allRoomsInHome;
     });
     const joiningRooms = useJoiningRooms();
 
@@ -303,11 +315,13 @@ const RoomListHeader = ({ onVisibilityChange }: IProps) => {
         </IconizedContextMenu>;
     }
 
-    let title = _t("Home");
+    let title: string;
     if (activeSpace) {
         title = activeSpace.name;
     } else if (communityId) {
         title = CommunityPrototypeStore.instance.getSelectedCommunityName();
+    } else {
+        title = getMetaSpaceName(spaceKey as MetaSpace, allRoomsInHome);
     }
 
     let pendingRoomJoinSpinner;
@@ -326,7 +340,7 @@ const RoomListHeader = ({ onVisibilityChange }: IProps) => {
             onClick={openMainMenu}
             isExpanded={mainMenuDisplayed}
             className="mx_RoomListHeader_contextMenuButton"
-            title={activeSpace ? _t("Space menu") : _t("Home options")}
+            title={activeSpace ? _t("Space menu") : _t("Space options")}
         >
             { title }
         </ContextMenuTooltipButton>
@@ -336,7 +350,7 @@ const RoomListHeader = ({ onVisibilityChange }: IProps) => {
             onClick={openPlusMenu}
             isExpanded={plusMenuDisplayed}
             className="mx_RoomListHeader_plusButton"
-            title={activeSpace ? _t("Add to %(spaceName)s", { spaceName: activeSpace.name }) : _t("Add to Home")}
+            title={activeSpace ? _t("Add to %(spaceName)s", { spaceName: activeSpace.name }) : _t("Add to space")}
         />
 
         { contextMenu }
