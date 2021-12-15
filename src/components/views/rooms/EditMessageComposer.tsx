@@ -158,6 +158,11 @@ class EditMessageComposer extends React.Component<IEditMessageComposerProps, ISt
         }
         const action = getKeyBindingsManager().getMessageComposerAction(event);
         switch (action) {
+            case MessageComposerAction.NewLine:
+                this.sendEdit();
+                event.stopPropagation();
+                event.preventDefault();
+                break;
             case MessageComposerAction.Send:
                 this.sendEdit();
                 event.stopPropagation();

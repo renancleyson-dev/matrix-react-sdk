@@ -51,6 +51,8 @@ import { ICompletion } from "../../../autocomplete/Autocompleter";
 import { AutocompleteAction, getKeyBindingsManager, MessageComposerAction } from '../../../KeyBindingsManager';
 import { replaceableComponent } from "../../../utils/replaceableComponent";
 
+const CODE_BLOCK = /^```$/;
+
 // matches emoticons which follow the start of a line or whitespace
 const REGEX_EMOTICON_WHITESPACE = new RegExp('(?:^|\\s)(' + EMOTICON_REGEX.source + ')\\s|:^$');
 export const REGEX_EMOTICON = new RegExp('(?:^|\\s)(' + EMOTICON_REGEX.source + ')$');
@@ -549,8 +551,10 @@ export default class BasicMessageEditor extends React.Component<IProps, IState> 
                 handled = true;
                 break;
             case MessageComposerAction.NewLine:
-                this.insertText("\n");
-                handled = true;
+                if (!this.isCaretOnBlockCode()) {
+                    this.insertText("\n");
+                    handled = true;
+                }
                 break;
             case MessageComposerAction.MoveCursorToStart:
                 setSelection(this.editorRef.current, model, {
@@ -565,6 +569,12 @@ export default class BasicMessageEditor extends React.Component<IProps, IState> 
                     offset: model.parts[model.parts.length - 1].text.length,
                 });
                 handled = true;
+                break;
+            case MessageComposerAction.Send:
+                if (this.isCaretOnBlockCode()) {
+                    this.insertText("\n");
+                    handled = true;
+                }
                 break;
         }
         if (handled) {
@@ -622,6 +632,21 @@ export default class BasicMessageEditor extends React.Component<IProps, IState> 
         this.modifiedFlag = true;
         this.setState({ completionIndex });
     };
+
+    private isCaretOnBlockCode() {
+        const { model } = this.props;
+        const caret = this.getCaret();
+        const { index } = model.positionForOffset(caret.offset, caret.atNodeEnd);
+        const currentPart = model.parts[index];
+        if (CODE_BLOCK.test(currentPart.text)) {
+            return true;
+        }
+
+        const parts = model.parts.slice(0, index + 1).filter(part => CODE_BLOCK.test(part.text));
+        const isInsideIncompleteBlock = parts.length % 2 !== 0;
+
+        return isInsideIncompleteBlock;
+    }
 
     private configureEmoticonAutoReplace = (): void => {
         this.props.model.setTransformCallback(this.transform);
